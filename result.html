@@ -915,12 +915,26 @@ function showTab(tabName) {
   const params = new URLSearchParams(window.location.search);
   const pName = params.get('name');
   const pRel = params.get('rel');
+  const pDate = params.get('date');
   if (pName) {
     document.querySelectorAll('.name-partner').forEach(el => el.textContent = pName);
     document.title = '縁結び鑑定 | あなたと' + pName + 'の相性';
   }
   if (pRel) {
     document.querySelectorAll('.meta-badge').forEach(el => el.textContent = '関係性：' + pRel);
+  }
+  if (pDate) {
+    // 日付バッジを更新（例: "6月5日" → "2026年6月5日 鑑定書"）
+    const now = new Date();
+    const year = now.getFullYear();
+    document.querySelectorAll('.date-badge').forEach(el => {
+      // テキストノードだけ更新
+      el.childNodes.forEach(node => {
+        if (node.nodeType === 3 && node.textContent.trim()) {
+          node.textContent = year + '年' + pDate + ' 鑑定書';
+        }
+      });
+    });
   }
 </script>
 </body>
