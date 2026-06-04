@@ -33,7 +33,6 @@
     padding: 24px 16px 40px;
   }
 
-  /* タイトル */
   .title-row {
     display: flex;
     align-items: center;
@@ -71,7 +70,6 @@
     border: none;
   }
 
-  /* カード */
   .card {
     background: var(--card);
     border: 1px solid var(--border2);
@@ -105,16 +103,11 @@
     height: 14px;
   }
 
-  /* セレクト行 */
   .select-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
     margin-bottom: 8px;
-  }
-
-  .select-row.two {
-    grid-template-columns: 1fr 1fr 1fr;
   }
 
   select {
@@ -138,7 +131,12 @@
 
   select:focus { outline: none; border-color: var(--accent); }
 
-  /* テキスト入力 */
+  /* 名前入力ラッパー */
+  .name-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+
   .name-input {
     width: 100%;
     background: #2d2860;
@@ -146,15 +144,37 @@
     border-radius: 12px;
     color: var(--text);
     font-size: 15px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    padding: 14px 44px 14px 16px;
     font-family: 'Noto Sans JP', sans-serif;
   }
 
   .name-input::placeholder { color: var(--text3); }
   .name-input:focus { outline: none; border-color: var(--accent); }
 
-  /* 候補タグ */
+  /* ×ボタン */
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(139,122,170,0.3);
+    border: none;
+    color: var(--text3);
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .clear-btn.visible {
+    display: flex;
+  }
+
   .suggest-tags {
     display: flex;
     gap: 8px;
@@ -178,12 +198,10 @@
     color: var(--text);
   }
 
-  /* 関係性ボタン */
   .relation-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 8px;
-    margin-bottom: 0;
   }
 
   .relation-grid.row2 {
@@ -210,7 +228,6 @@
     color: var(--text);
   }
 
-  /* 日付タブ */
   .date-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -247,7 +264,6 @@
     color: var(--text);
   }
 
-  /* 鑑定ボタン */
   .start-btn {
     width: 100%;
     background: linear-gradient(135deg, #7c3aed, #db2777);
@@ -266,7 +282,6 @@
   .start-btn:hover { opacity: 0.9; }
   .start-btn:active { transform: scale(0.98); }
 
-  /* フッター統計 */
   .stats {
     text-align: center;
     margin-top: 16px;
@@ -280,13 +295,11 @@
 </head>
 <body>
 
-<!-- タイトル行 -->
 <div class="title-row">
   <div class="title">AI相性占い</div>
   <button class="rocket-btn">🚀</button>
 </div>
 
-<!-- あなたカード -->
 <div class="card">
   <div class="card-label">
     あなた
@@ -294,7 +307,6 @@
       <input type="checkbox" id="fixCheck" checked> 情報を固定
     </label>
   </div>
-
   <div class="select-row">
     <select id="blood">
       <option>A型</option>
@@ -331,11 +343,9 @@
       <option>魚座</option>
     </select>
   </div>
-
   <div class="select-row">
     <select id="year">
       <option>1955年</option>
-      <option>1960年</option>
       <option selected>1960年</option>
       <option>1965年</option>
       <option>1970年</option>
@@ -374,17 +384,16 @@
   </div>
 </div>
 
-<!-- お相手カード -->
 <div class="card">
   <div class="card-label">お相手</div>
-
-  <input type="text" class="name-input" id="partnerName" placeholder="名前を入力">
-
+  <div class="name-wrap">
+    <input type="text" class="name-input" id="partnerName" placeholder="名前を入力" oninput="onNameInput()">
+    <button class="clear-btn" id="clearBtn" onclick="clearName()">✕</button>
+  </div>
   <div class="suggest-tags">
     <div class="suggest-tag" onclick="setName('中森明菜')">中森明菜</div>
     <div class="suggest-tag" onclick="setName('三宅正記')">三宅正記</div>
   </div>
-
   <div class="relation-grid">
     <button class="rel-btn" onclick="selectRel(this)">恋人</button>
     <button class="rel-btn" onclick="selectRel(this)">片思い</button>
@@ -398,29 +407,25 @@
   </div>
 </div>
 
-<!-- 日付タブ -->
 <div class="date-tabs">
   <div class="date-tab active" onclick="selectDate(this)">
     <div class="day-label">本日</div>
-    <div class="day-date" id="todayDate">6月5日</div>
+    <div class="day-date" id="todayDate"></div>
   </div>
   <div class="date-tab" onclick="selectDate(this)">
     <div class="day-label">明日</div>
-    <div class="day-date" id="tomorrowDate">6月6日</div>
+    <div class="day-date" id="tomorrowDate"></div>
   </div>
 </div>
 
-<!-- 鑑定ボタン -->
 <button class="start-btn" onclick="startReading()">鑑定を開始する</button>
 
-<!-- 統計 -->
 <div class="stats">
   <span>累計アクセス 265</span>
   <span>ユニーク訪問者 85</span>
 </div>
 
 <script>
-  // 日付設定
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -428,31 +433,45 @@
   document.getElementById('todayDate').textContent = fmt(today);
   document.getElementById('tomorrowDate').textContent = fmt(tomorrow);
 
-  // 名前候補
-  function setName(name) {
-    document.getElementById('partnerName').value = name;
+  function onNameInput() {
+    const val = document.getElementById('partnerName').value;
+    const btn = document.getElementById('clearBtn');
+    if (val.length > 0) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
   }
 
-  // 関係性選択
+  function clearName() {
+    document.getElementById('partnerName').value = '';
+    document.getElementById('clearBtn').classList.remove('visible');
+    document.getElementById('partnerName').focus();
+  }
+
+  function setName(name) {
+    document.getElementById('partnerName').value = name;
+    document.getElementById('clearBtn').classList.add('visible');
+  }
+
   function selectRel(btn) {
     document.querySelectorAll('.rel-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
 
-  // 日付選択
   function selectDate(tab) {
     document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
   }
 
-  // 鑑定開始
   function startReading() {
-    const name = document.getElementById('partnerName').value;
-    if (!name.trim()) {
+    const name = document.getElementById('partnerName').value.trim();
+    if (!name) {
       alert('お相手の名前を入力してください');
       return;
     }
-    window.location.href = 'result.html?name=' + encodeURIComponent(name);
+    const rel = document.querySelector('.rel-btn.active')?.textContent || '友人';
+    window.location.href = 'result.html?name=' + encodeURIComponent(name) + '&rel=' + encodeURIComponent(rel);
   }
 </script>
 
