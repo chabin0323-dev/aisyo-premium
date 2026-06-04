@@ -554,120 +554,12 @@
     animation: fadeIn 0.4s ease;
   }
 
-  /* モーダル */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: #1e1a38;
-    border: 1px solid rgba(192,132,252,0.3);
-    border-radius: 20px;
-    padding: 24px;
-    width: 100%;
-    max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .modal-title { font-size: 17px; font-weight: 700; color: var(--accent); }
-  .modal-close {
-    background: rgba(192,132,252,0.15);
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    color: var(--text2);
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .guide-step { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
-  .guide-num {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: linear-gradient(135deg, #7c3aed, #db2777);
-    color: white; font-size: 13px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .guide-text h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .guide-text p { font-size: 13px; color: var(--text2); line-height: 1.7; }
-  .guide-divider { border: none; border-top: 1px solid rgba(192,132,252,0.15); margin: 16px 0; }
-  .guide-note {
-    background: rgba(192,132,252,0.08);
-    border: 1px solid rgba(192,132,252,0.2);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 12px; color: var(--text2); line-height: 1.8;
-  }
+  
 </style>
 </head>
 <body>
 
 <!-- ヘッダー -->
-
-<div class="modal-overlay" id="guideModal" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📖 使い方ガイド</div>
-      <button class="modal-close" onclick="document.getElementById('guideModal').classList.remove('open')">✕</button>
-    </div>
-    <div class="guide-step">
-      <div class="guide-num">1</div>
-      <div class="guide-text">
-        <h4>あなたの情報を入力</h4>
-        <p>血液型・干支・星座・生年月日を選択してください。「情報を固定」にチェックを入れると次回から自動で入力されます。</p>
-      </div>
-    </div>
-    <div class="guide-step">
-      <div class="guide-num">2</div>
-      <div class="guide-text">
-        <h4>お相手の名前を入力</h4>
-        <p>鑑定したいお相手の名前を入力してください。候補タグから選ぶこともできます。✕ボタンでタグを削除できます。</p>
-      </div>
-    </div>
-    <div class="guide-step">
-      <div class="guide-num">3</div>
-      <div class="guide-text">
-        <h4>関係性を選択</h4>
-        <p>お相手との関係性（恋人・友人・仕事仲間など）を選んでください。鑑定結果に反映されます。</p>
-      </div>
-    </div>
-    <div class="guide-step">
-      <div class="guide-num">4</div>
-      <div class="guide-text">
-        <h4>日付を選択</h4>
-        <p>本日または明日の鑑定を選べます。それぞれの日の運勢に合わせた鑑定結果が表示されます。</p>
-      </div>
-    </div>
-    <div class="guide-step">
-      <div class="guide-num">5</div>
-      <div class="guide-text">
-        <h4>タブを切り替えて確認</h4>
-        <p>点数・本音・運命・分析・流れ・結論の6つのタブで詳しい鑑定結果が確認できます。</p>
-      </div>
-    </div>
-    <hr class="guide-divider">
-    <div class="guide-note">
-      💡 鑑定結果はお相手の名前と関係性によって変わります。<br>
-      ✨ タブを切り替えて様々な角度から相性を確認できます。<br>
-      🔄 何度でも鑑定できます。お気軽にお試しください。
-    </div>
-  </div>
-</div>
 
 <div class="header">
   <div class="header-top">
@@ -675,7 +567,7 @@
       <div class="dot"></div>
       2026年6月4日 鑑定書
     </div>
-    <div class="header-icon" onclick="document.getElementById('guideModal').classList.add('open')" style="cursor:pointer;">🚀</div>
+    
   </div>
   <div class="progress-bar">
     <div class="progress-fill"></div>
@@ -1013,13 +905,7 @@
 </div>
 
 <script>
-function closeModal(e) {
-    if (e.target === document.getElementById('guideModal')) {
-      document.getElementById('guideModal').classList.remove('open');
-    }
-  }
-
-  function showTab(tabName) {
+function showTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tabName).classList.add('active');
