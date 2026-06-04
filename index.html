@@ -182,7 +182,18 @@
     margin-bottom: 14px;
   }
 
+  .suggest-tag-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(192,132,252,0.12);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
   .suggest-tag {
+    background: transparent;
+    border: none;
     background: rgba(192,132,252,0.12);
     border: 1px solid var(--border2);
     border-radius: 20px;
@@ -194,8 +205,25 @@
   }
 
   .suggest-tag:hover {
-    background: rgba(192,132,252,0.25);
+    background: rgba(192,132,252,0.15);
     color: var(--text);
+  }
+
+  .tag-del-btn {
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--border2);
+    color: var(--text3);
+    font-size: 11px;
+    padding: 5px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .tag-del-btn:hover {
+    background: rgba(244,114,182,0.2);
+    color: var(--accent2);
   }
 
   .relation-grid {
@@ -390,9 +418,15 @@
     <input type="text" class="name-input" id="partnerName" placeholder="名前を入力" oninput="onNameInput()">
     <button class="clear-btn" id="clearBtn" onclick="clearName()">✕</button>
   </div>
-  <div class="suggest-tags">
-    <div class="suggest-tag" onclick="setName('中森明菜')">中森明菜</div>
-    <div class="suggest-tag" onclick="setName('三宅正記')">三宅正記</div>
+  <div class="suggest-tags" id="suggestTags">
+    <div class="suggest-tag-wrap">
+      <span class="suggest-tag" onclick="setName('中森明菜')">中森明菜</span>
+      <button class="tag-del-btn" onclick="removeTag(this)">✕</button>
+    </div>
+    <div class="suggest-tag-wrap">
+      <span class="suggest-tag" onclick="setName('三宅正記')">三宅正記</span>
+      <button class="tag-del-btn" onclick="removeTag(this)">✕</button>
+    </div>
   </div>
   <div class="relation-grid">
     <button class="rel-btn" onclick="selectRel(this)">恋人</button>
@@ -452,6 +486,10 @@
   function setName(name) {
     document.getElementById('partnerName').value = name;
     document.getElementById('clearBtn').classList.add('visible');
+  }
+
+  function removeTag(btn) {
+    btn.closest('.suggest-tag-wrap').remove();
   }
 
   function selectRel(btn) {
