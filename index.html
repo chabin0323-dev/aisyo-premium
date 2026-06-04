@@ -509,7 +509,8 @@
       return;
     }
     const rel = document.querySelector('.rel-btn.active')?.textContent || '友人';
-    window.location.href = 'result.html?name=' + encodeURIComponent(name) + '&rel=' + encodeURIComponent(rel);
+    const activeTab = document.querySelector('.date-tab.active .day-date').textContent;
+    window.location.href = 'result.html?name=' + encodeURIComponent(name) + '&rel=' + encodeURIComponent(rel) + '&date=' + encodeURIComponent(activeTab);
   }
 </script>
 
