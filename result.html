@@ -910,5 +910,18 @@ function showTab(tabName) {
 }
 </script>
 
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const pName = params.get('name');
+  const pRel = params.get('rel');
+  if (pName) {
+    document.querySelectorAll('.name-partner').forEach(el => el.textContent = pName);
+    document.title = '縁結び鑑定 | あなたと' + pName + 'の相性';
+  }
+  if (pRel) {
+    document.querySelectorAll('.meta-badge').forEach(el => el.textContent = '関係性：' + pRel);
+  }
+</script>
 </body>
 </html>
