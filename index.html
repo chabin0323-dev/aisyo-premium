@@ -3,27 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>縁結び鑑定 | あなたと山田太郎の相性</title>
+<title>AI相性占い</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
 
   :root {
     --bg: #0d0a1a;
     --bg2: #13102a;
-    --bg3: #1a1535;
     --card: #1e1a38;
-    --card2: #221e40;
     --accent: #c084fc;
     --accent2: #f472b6;
-    --accent3: #fb923c;
     --gold: #fbbf24;
     --text: #f0eafb;
     --text2: #c4b5e8;
     --text3: #8b7aaa;
     --border: rgba(192,132,252,0.15);
     --border2: rgba(192,132,252,0.3);
-    --green: #4ade80;
-    --teal: #2dd4bf;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,879 +30,430 @@
     min-height: 100vh;
     max-width: 480px;
     margin: 0 auto;
+    padding: 24px 16px 40px;
   }
 
-  /* ヘッダー */
-  .header {
-    background: linear-gradient(180deg, #0d0a1a 0%, #13102a 100%);
-    padding: 16px 20px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .header-top {
+  /* タイトル */
+  .title-row {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 24px;
   }
 
-  .date-badge {
-    background: linear-gradient(135deg, #1e1a38, #2d2060);
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px;
-    color: var(--text2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0099ff, #6600ff, #ff00ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbow 3s linear infinite;
+    letter-spacing: 0.02em;
   }
 
-  .date-badge .dot {
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+  @keyframes rainbow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-  }
-
-  .header-icon {
-    width: 36px;
-    height: 36px;
+  .rocket-btn {
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, #7c3aed, #db2777);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-  }
-
-  /* プログレスバー */
-  .progress-bar {
-    height: 3px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 2px;
-    margin-bottom: 14px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 55%;
-    background: linear-gradient(90deg, #7c3aed, #db2777, #f97316);
-    border-radius: 2px;
-  }
-
-  /* ナビタブ */
-  .nav-tabs {
-    display: flex;
-    gap: 6px;
-    padding-bottom: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav-tabs::-webkit-scrollbar { display: none; }
-
-  .tab {
-    padding: 8px 16px;
-    border-radius: 20px 20px 0 0;
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
+    font-size: 18px;
     cursor: pointer;
-    color: var(--text3);
-    background: transparent;
     border: none;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
-  }
-
-  .tab:hover { color: var(--text2); }
-
-  .tab.active {
-    color: white;
-    background: linear-gradient(135deg, rgba(124,58,237,0.4), rgba(219,39,119,0.3));
-    border-bottom-color: var(--accent);
-  }
-
-  /* メインコンテンツ */
-  .main {
-    padding: 0;
-  }
-
-  /* セクション */
-  .section {
-    padding: 24px 20px;
-  }
-
-  /* ヒーローセクション */
-  .hero {
-    padding: 28px 20px 24px;
-    background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
-  }
-
-  .only-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--accent);
-    font-weight: 500;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-
-  .names-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-
-  .name-you {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .ampersand {
-    font-size: 22px;
-    color: var(--accent2);
-  }
-
-  .name-partner {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 28px;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .meta-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .meta-id {
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  .meta-badge {
-    background: rgba(192,132,252,0.15);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 3px 10px;
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  /* 総合スコアセクション */
-  .score-section {
-    padding: 0 20px 24px;
-  }
-
-  .score-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 16px;
-  }
-
-  .score-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    text-align: center;
-  }
-
-  .score-label {
-    font-size: 11px;
-    color: var(--text3);
-    margin-bottom: 6px;
-    display: block;
-  }
-
-  .score-value {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .score-value.high { color: var(--accent); }
-  .score-value.mid { color: var(--gold); }
-  .score-value.good { color: var(--teal); }
-  .score-value.grow { color: var(--accent2); }
-
-  .score-bar {
-    height: 4px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    margin-top: 8px;
-    overflow: hidden;
-  }
-
-  .score-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s ease;
-  }
-
-  /* 運命タイトルセクション */
-  .destiny-header {
-    padding: 24px 20px 0;
-  }
-
-  .destiny-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--text3);
-    font-weight: 500;
-    margin-bottom: 10px;
-  }
-
-  .destiny-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 22px;
-    font-weight: 500;
-    line-height: 1.5;
-    background: linear-gradient(135deg, #f0eafb, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 20px;
   }
 
   /* カード */
-  .info-card {
+  .card {
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
-    margin: 10px 20px;
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
   }
 
-  .card-header {
+  .card-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-bottom: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
+    justify-content: space-between;
   }
 
-  .card-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .fix-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 400;
   }
 
-  .card-icon {
-    font-size: 18px;
+  .fix-check input {
+    accent-color: var(--accent);
+    width: 14px;
+    height: 14px;
   }
 
-  .card-title {
+  /* セレクト行 */
+  .select-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .select-row.two {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  select {
+    background: #2d2860;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 10px 8px;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b7aaa'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+
+  select:focus { outline: none; border-color: var(--accent); }
+
+  /* テキスト入力 */
+  .name-input {
+    width: 100%;
+    background: #2d2860;
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    color: var(--text);
     font-size: 15px;
-    font-weight: 600;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .name-input::placeholder { color: var(--text3); }
+  .name-input:focus { outline: none; border-color: var(--accent); }
+
+  /* 候補タグ */
+  .suggest-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .suggest-tag {
+    background: rgba(192,132,252,0.12);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggest-tag:hover {
+    background: rgba(192,132,252,0.25);
     color: var(--text);
   }
 
-  .card-title.special {
+  /* 関係性ボタン */
+  .relation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .relation-grid.row2 {
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-top: 8px;
+  }
+
+  .rel-btn {
+    background: #2d2860;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text2);
     font-size: 13px;
+    padding: 10px 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .rel-btn:hover, .rel-btn.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(219,39,119,0.4));
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* 日付タブ */
+  .date-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .date-tab {
+    background: #2d2860;
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .date-tab.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.6), rgba(219,39,119,0.5));
+    border-color: var(--accent);
+  }
+
+  .date-tab .day-label {
+    font-size: 12px;
     color: var(--text3);
+    margin-bottom: 4px;
+  }
+
+  .date-tab.active .day-label { color: var(--text2); }
+
+  .date-tab .day-date {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* 鑑定ボタン */
+  .start-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #7c3aed, #db2777);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 18px;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: opacity 0.2s, transform 0.1s;
     letter-spacing: 0.05em;
   }
 
-  .card-body {
-    font-size: 14px;
-    line-height: 1.85;
-    color: var(--text2);
-  }
+  .start-btn:hover { opacity: 0.9; }
+  .start-btn:active { transform: scale(0.98); }
 
-  /* 運命分析カード */
-  .destiny-card {
-    background: linear-gradient(135deg, rgba(30,26,56,0.9), rgba(34,30,64,0.9));
-    border: 1px solid rgba(192,132,252,0.2);
-  }
-
-  /* 重要な示唆カード */
-  .hint-card {
-    background: linear-gradient(135deg, rgba(22,20,45,0.9), rgba(28,24,52,0.9));
-    border: 1px solid rgba(244,114,182,0.15);
-    border-left: 3px solid var(--accent2);
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin: 10px 20px;
-  }
-
-  .hint-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--accent2);
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  /* 詳細分析セクション */
-  .analysis-section {
-    padding: 24px 20px;
-    border-top: 1px solid var(--border);
-  }
-
-  .section-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 17px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-title::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 18px;
-    background: linear-gradient(180deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-  }
-
-  /* 詳細スコアリスト */
-  .detail-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .detail-name {
-    font-size: 13px;
-    color: var(--text2);
-    min-width: 80px;
-  }
-
-  .detail-bar-wrap {
-    flex: 1;
-    height: 6px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .detail-bar-fill {
-    height: 100%;
-    border-radius: 3px;
-  }
-
-  .detail-score {
-    font-size: 13px;
-    font-weight: 600;
-    min-width: 36px;
-    text-align: right;
-  }
-
-  /* タイムラインセクション */
-  .timeline {
-    padding: 24px 20px;
-    border-top: 1px solid var(--border);
-  }
-
-  .timeline-item {
-    display: flex;
-    gap: 14px;
-    padding-bottom: 20px;
-    position: relative;
-  }
-
-  .timeline-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 16px;
-    top: 32px;
-    bottom: 0;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .timeline-dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-    z-index: 1;
-  }
-
-  .timeline-content h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .timeline-content p {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.7;
-  }
-
-  .timeline-time {
-    font-size: 11px;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-
-  /* 結論セクション */
-  .conclusion {
-    padding: 24px 20px;
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-    border-top: 1px solid var(--border);
-  }
-
-  .conclusion-box {
-    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(219,39,119,0.1));
-    border: 1px solid rgba(192,132,252,0.25);
-    border-radius: 16px;
-    padding: 20px;
-  }
-
-  .conclusion-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .conclusion-text {
-    font-size: 14px;
-    line-height: 1.9;
-    color: var(--text2);
-  }
-
-  .verdict-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(219,39,119,0.25));
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    margin-top: 16px;
-  }
-
-  /* フッター */
-  .footer {
-    padding: 20px;
+  /* フッター統計 */
+  .stats {
     text-align: center;
-    border-top: 1px solid var(--border);
-    background: var(--bg2);
-  }
-
-  .footer-text {
-    font-size: 11px;
+    margin-top: 16px;
+    font-size: 12px;
     color: var(--text3);
-    line-height: 1.8;
-  }
-
-  /* アニメーション */
-  .fade-in {
-    animation: fadeIn 0.6s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* タブコンテンツ切り替え */
-  .tab-content {
-    display: none;
-  }
-
-  .tab-content.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
   }
 </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
-<div class="header">
-  <div class="header-top">
-    <div class="date-badge">
-      <div class="dot"></div>
-      2026年6月4日 鑑定書
-    </div>
-    <div class="header-icon">🚀</div>
+<!-- タイトル行 -->
+<div class="title-row">
+  <div class="title">AI相性占い</div>
+  <button class="rocket-btn">🚀</button>
+</div>
+
+<!-- あなたカード -->
+<div class="card">
+  <div class="card-label">
+    あなた
+    <label class="fix-check">
+      <input type="checkbox" id="fixCheck" checked> 情報を固定
+    </label>
   </div>
-  <div class="progress-bar">
-    <div class="progress-fill"></div>
+
+  <div class="select-row">
+    <select id="blood">
+      <option>A型</option>
+      <option selected>O型</option>
+      <option>B型</option>
+      <option>AB型</option>
+    </select>
+    <select id="eto">
+      <option>寅</option>
+      <option>卯</option>
+      <option selected>子</option>
+      <option>丑</option>
+      <option>辰</option>
+      <option>巳</option>
+      <option>午</option>
+      <option>未</option>
+      <option>申</option>
+      <option>酉</option>
+      <option>戌</option>
+      <option>亥</option>
+    </select>
+    <select id="seiza">
+      <option selected>牡羊座</option>
+      <option>牡牛座</option>
+      <option>双子座</option>
+      <option>蟹座</option>
+      <option>獅子座</option>
+      <option>乙女座</option>
+      <option>天秤座</option>
+      <option>蠍座</option>
+      <option>射手座</option>
+      <option>山羊座</option>
+      <option>水瓶座</option>
+      <option>魚座</option>
+    </select>
   </div>
-  <div class="nav-tabs">
-    <button class="tab" onclick="showTab('score')">点数</button>
-    <button class="tab" onclick="showTab('honshitsu')">本音</button>
-    <button class="tab active" onclick="showTab('unmei')">運命</button>
-    <button class="tab" onclick="showTab('bunseki')">分析</button>
-    <button class="tab" onclick="showTab('nagare')">流れ</button>
-    <button class="tab" onclick="showTab('ketsuron')">結論</button>
+
+  <div class="select-row">
+    <select id="year">
+      <option>1955年</option>
+      <option>1960年</option>
+      <option selected>1960年</option>
+      <option>1965年</option>
+      <option>1970年</option>
+      <option>1975年</option>
+      <option>1980年</option>
+      <option>1985年</option>
+      <option>1990年</option>
+      <option>1995年</option>
+      <option>2000年</option>
+    </select>
+    <select id="month">
+      <option>1月</option>
+      <option>2月</option>
+      <option selected>3月</option>
+      <option>4月</option>
+      <option>5月</option>
+      <option>6月</option>
+      <option>7月</option>
+      <option>8月</option>
+      <option>9月</option>
+      <option>10月</option>
+      <option>11月</option>
+      <option>12月</option>
+    </select>
+    <select id="day">
+      <option>1日</option>
+      <option>5日</option>
+      <option>10日</option>
+      <option>15日</option>
+      <option>20日</option>
+      <option selected>23日</option>
+      <option>25日</option>
+      <option>28日</option>
+      <option>31日</option>
+    </select>
   </div>
 </div>
 
-<!-- メイン -->
-<div class="main">
+<!-- お相手カード -->
+<div class="card">
+  <div class="card-label">お相手</div>
 
-  <!-- ヒーロー -->
-  <div class="hero">
-    <div class="only-label">Only for you</div>
-    <div class="names-row">
-      <span class="name-you">あなた</span>
-      <span class="ampersand">&</span>
-      <span class="name-partner">山田太郎</span>
-    </div>
-    <div class="meta-row">
-      <span class="meta-id">鑑定番号: MS-2026-V3</span>
-      <span class="meta-badge">関係性：友人</span>
-    </div>
+  <input type="text" class="name-input" id="partnerName" placeholder="名前を入力">
+
+  <div class="suggest-tags">
+    <div class="suggest-tag" onclick="setName('中森明菜')">中森明菜</div>
+    <div class="suggest-tag" onclick="setName('三宅正記')">三宅正記</div>
   </div>
 
-  <!-- ===== 運命タブ ===== -->
-  <div id="tab-unmei" class="tab-content active">
-
-    <!-- 運命タイトル -->
-    <div class="destiny-header">
-      <div class="destiny-label">DESTINY ANALYSIS</div>
-      <div class="destiny-title">このご縁は、偶然より深い意味を持っています</div>
-    </div>
-
-    <!-- 二人の総合運勢 -->
-    <div class="info-card">
-      <div class="card-header">
-        <div class="card-dot" style="background: var(--accent);"></div>
-        <div class="card-title">二人の総合運勢</div>
-      </div>
-      <div class="card-body">
-        二人の総合運勢は伸びしろの大きいご縁です。焦って答えを出すより、やり取りの質を高めるほど相性は強くなっていきます。今は土台作りが未来の結びつきに変わる段階です。
-      </div>
-    </div>
-
-    <!-- 運命分析 -->
-    <div class="info-card destiny-card">
-      <div class="card-header">
-        <div class="card-icon">🔗</div>
-        <div class="card-title">運命分析</div>
-      </div>
-      <div class="card-body">
-        遠い異国で共に旅をしていた仲間だったようです。初対面でもどこか懐かしく感じるのは、共に困難を乗り越えた記憶が魂にあるからです。ただし今は試練も混ざりやすく、相手を理解する姿勢が運命の扉を開きます。難しさの中にこそ、この関係の本当の価値が隠れています。
-      </div>
-    </div>
-
-    <!-- 重要な示唆 -->
-    <div class="hint-card">
-      <div class="hint-label">重要な示唆</div>
-      <div class="card-body">
-        この関係は、ただ「好きかどうか」だけで判断しない方が良いご縁です。つながる意味が深いほど、進み方はゆっくりでも、残るものは強くなります。
-      </div>
-    </div>
-
-    <!-- 霊的なつながり -->
-    <div class="info-card" style="background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(124,58,237,0.08)); border-color: rgba(45,212,191,0.2);">
-      <div class="card-header">
-        <div class="card-icon">✨</div>
-        <div class="card-title">霊的なつながりの深さ</div>
-      </div>
-      <div class="card-body">
-        二人の間には、言葉を超えた感覚的な理解がすでに存在しています。それが時に「なんとなくわかる」という感覚として現れます。この直感的な共鳴を大切にすることで、関係はより本物の領域へと進んでいきます。
-      </div>
-    </div>
-
-    <!-- 今の関係への星のメッセージ -->
-    <div class="info-card" style="border-color: rgba(251,191,36,0.2);">
-      <div class="card-header">
-        <div class="card-icon">⭐</div>
-        <div class="card-title" style="color: var(--gold);">星からのメッセージ</div>
-      </div>
-      <div class="card-body">
-        今この時期は、急かすよりも「存在する」ことが最も強い引力になります。焦らず、でも確実に、あなたの誠実さが相手の心の扉を開いていくでしょう。宇宙の時計はすでに動き始めています。
-      </div>
-    </div>
-
+  <div class="relation-grid">
+    <button class="rel-btn" onclick="selectRel(this)">恋人</button>
+    <button class="rel-btn" onclick="selectRel(this)">片思い</button>
+    <button class="rel-btn" onclick="selectRel(this)">夫婦</button>
+    <button class="rel-btn active" onclick="selectRel(this)">友人</button>
   </div>
-
-  <!-- ===== 点数タブ ===== -->
-  <div id="tab-score" class="tab-content">
-    <div class="score-section" style="padding-top: 24px;">
-      <div class="section-title">相性スコア総評</div>
-      <div class="score-grid">
-        <div class="score-card">
-          <span class="score-label">総合相性</span>
-          <div class="score-value high">78</div>
-          <div class="score-bar"><div class="score-bar-fill" style="width:78%; background: linear-gradient(90deg, #7c3aed, #c084fc);"></div></div>
-        </div>
-        <div class="score-card">
-          <span class="score-label">魂の共鳴</span>
-          <div class="score-value good">85</div>
-          <div class="score-bar"><div class="score-bar-fill" style="width:85%; background: linear-gradient(90deg, #0f766e, #2dd4bf);"></div></div>
-        </div>
-        <div class="score-card">
-          <span class="score-label">運命の深さ</span>
-          <div class="score-value mid">72</div>
-          <div class="score-bar"><div class="score-bar-fill" style="width:72%; background: linear-gradient(90deg, #b45309, #fbbf24);"></div></div>
-        </div>
-        <div class="score-card">
-          <span class="score-label">成長の可能性</span>
-          <div class="score-value grow">91</div>
-          <div class="score-bar"><div class="score-bar-fill" style="width:91%; background: linear-gradient(90deg, #be185d, #f472b6);"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="analysis-section">
-      <div class="section-title">詳細スコア</div>
-      <div class="detail-list">
-        <div class="detail-item">
-          <span class="detail-name">感情の相性</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:82%; background: linear-gradient(90deg, #7c3aed, #c084fc);"></div></div>
-          <span class="detail-score" style="color: var(--accent);">82</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-name">価値観の一致</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:67%; background: linear-gradient(90deg, #0369a1, #38bdf8);"></div></div>
-          <span class="detail-score" style="color: #38bdf8;">67</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-name">コミュニケーション</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:88%; background: linear-gradient(90deg, #0f766e, #2dd4bf);"></div></div>
-          <span class="detail-score" style="color: var(--teal);">88</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-name">信頼と安心感</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:74%; background: linear-gradient(90deg, #b45309, #fbbf24);"></div></div>
-          <span class="detail-score" style="color: var(--gold);">74</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-name">未来のビジョン</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:79%; background: linear-gradient(90deg, #be185d, #f472b6);"></div></div>
-          <span class="detail-score" style="color: var(--accent2);">79</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-name">カルマのつながり</span>
-          <div class="detail-bar-wrap"><div class="detail-bar-fill" style="width:93%; background: linear-gradient(90deg, #5b21b6, #a78bfa);"></div></div>
-          <span class="detail-score" style="color: #a78bfa;">93</span>
-        </div>
-      </div>
-    </div>
+  <div class="relation-grid row2">
+    <button class="rel-btn" onclick="selectRel(this)">仕事仲間</button>
+    <button class="rel-btn" onclick="selectRel(this)">商談相手</button>
+    <button class="rel-btn" onclick="selectRel(this)">上司</button>
   </div>
-
-  <!-- ===== 本音タブ ===== -->
-  <div id="tab-honshitsu" class="tab-content">
-    <div style="padding: 24px 20px 0;">
-      <div class="destiny-label" style="font-size:10px;letter-spacing:3px;color:var(--text3);font-weight:500;margin-bottom:10px;">INNER VOICE</div>
-      <div class="destiny-title">相手の心の奥で何が起きているか</div>
-    </div>
-
-    <div class="info-card">
-      <div class="card-header">
-        <div class="card-icon">💭</div>
-        <div class="card-title">山田太郎の本音</div>
-      </div>
-      <div class="card-body">
-        表面上は穏やかに接していますが、内側ではあなたのことを特別な存在として意識し始めています。ただ、自分の感情を表に出すことへの躊躇いがあり、それが距離感として現れることがあります。焦らず関わり続けることで、本音が少しずつ解放されていきます。
-      </div>
-    </div>
-
-    <div class="info-card" style="border-color: rgba(251,191,36,0.2);">
-      <div class="card-header">
-        <div class="card-icon">🔍</div>
-        <div class="card-title">相手が求めていること</div>
-      </div>
-      <div class="card-body">
-        山田太郎は、あなたに「安心して本音を言える関係」を求めています。完璧な姿より、少し不完全でも正直な自分でいられる場所を探しています。あなたがそれを提供できたとき、関係は一気に深まるでしょう。
-      </div>
-    </div>
-
-    <div class="hint-card">
-      <div class="hint-label">心理的なポイント</div>
-      <div class="card-body">
-        今の相手には、過去の経験から「また傷つくかもしれない」という防衛本能が働いています。急かすより、「この人は安全だ」と感じてもらえる積み重ねが最も効果的です。
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 分析タブ ===== -->
-  <div id="tab-bunseki" class="tab-content">
-    <div style="padding: 24px 20px 0;">
-      <div class="destiny-label" style="font-size:10px;letter-spacing:3px;color:var(--text3);font-weight:500;margin-bottom:10px;">DEEP ANALYSIS</div>
-      <div class="destiny-title">二人の関係の構造を読み解く</div>
-    </div>
-
-    <div class="info-card">
-      <div class="card-header">
-        <div class="card-icon">🌙</div>
-        <div class="card-title">月星座による相性</div>
-      </div>
-      <div class="card-body">
-        感情の波長が近く、相手の気分の変化を自然と感じ取れる関係です。この感情的な感受性の高さが、二人の絆を静かに、しかし確実に深めていく源泉となっています。
-      </div>
-    </div>
-
-    <div class="info-card destiny-card">
-      <div class="card-header">
-        <div class="card-icon">☯️</div>
-        <div class="card-title">陰陽のバランス</div>
-      </div>
-      <div class="card-body">
-        二人は表面的には似ているようで、内側では補い合う関係にあります。あなたが行動力を持つとき相手は安定を与え、相手が揺れるときあなたが支えになる。この自然なバランスが長続きする関係の証です。
-      </div>
-    </div>
-
-    <div class="info-card" style="border-color: rgba(74,222,128,0.2);">
-      <div class="card-header">
-        <div class="card-icon">🌱</div>
-        <div class="card-title">成長の方向性</div>
-      </div>
-      <div class="card-body">
-        この関係はお互いを「変える」のではなく、「引き出す」ご縁です。付き合いが深まるほど、自分でも気づかなかった能力や魅力が引き出されていきます。二人の未来には、今は想像できないほどの可能性が眠っています。
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 流れタブ ===== -->
-  <div id="tab-nagare" class="tab-content">
-    <div style="padding: 24px 20px 0;">
-      <div class="destiny-label" style="font-size:10px;letter-spacing:3px;color:var(--text3);font-weight:500;margin-bottom:10px;">TIMELINE</div>
-      <div class="destiny-title">これからの関係の流れ</div>
-    </div>
-
-    <div class="timeline" style="border-top: none; padding-top: 8px;">
-      <div class="timeline-item">
-        <div class="timeline-dot" style="background: linear-gradient(135deg, rgba(124,58,237,0.4), rgba(192,132,252,0.3)); border: 1px solid var(--accent);">🌸</div>
-        <div class="timeline-content">
-          <div class="timeline-time">現在〜1ヶ月</div>
-          <h4>信頼の種を蒔く時期</h4>
-          <p>今は急がず、日常の小さな積み重ねを大切にする時期です。特別なことよりも、安定した存在感を示すことが鍵になります。</p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-dot" style="background: linear-gradient(135deg, rgba(45,212,191,0.3), rgba(13,148,136,0.3)); border: 1px solid var(--teal);">🌊</div>
-        <div class="timeline-content">
-          <div class="timeline-time">1〜3ヶ月後</div>
-          <h4>本音が見え始める転換期</h4>
-          <p>相手の防衛が少しずつ緩み、より深い会話が生まれてきます。この時期に一度「心が通じた」と感じる瞬間が訪れるでしょう。</p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-dot" style="background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(180,83,9,0.3)); border: 1px solid var(--gold);">⚡</div>
-        <div class="timeline-content">
-          <div class="timeline-time">3〜6ヶ月後</div>
-          <h4>関係が定まる岐路</h4>
-          <p>二人の方向性がはっきりしてくる時期です。ここで正直な気持ちを伝えることが、最も大切なアクションになります。</p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-dot" style="background: linear-gradient(135deg, rgba(244,114,182,0.3), rgba(190,24,93,0.3)); border: 1px solid var(--accent2);">🌟</div>
-        <div class="timeline-content">
-          <div class="timeline-time">6ヶ月以降</div>
-          <h4>深いつながりへの到達</h4>
-          <p>ここまで丁寧に関係を育ててきたなら、二人は本物の意味でつながった状態にあります。この段階の関係は、簡単には壊れない強さを持ちます。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 結論タブ ===== -->
-  <div id="tab-ketsuron" class="tab-content">
-    <div style="padding: 24px 20px 0;">
-      <div class="destiny-label" style="font-size:10px;letter-spacing:3px;color:var(--text3);font-weight:500;margin-bottom:10px;">CONCLUSION</div>
-      <div class="destiny-title">鑑定士からの最終メッセージ</div>
-    </div>
-
-    <div class="conclusion" style="border-top: none; background: transparent;">
-      <div class="conclusion-box">
-        <div class="conclusion-title">この縁についての結論</div>
-        <div class="conclusion-text">
-          あなたと山田太郎の縁は、軽い偶然ではありません。二人が出会ったこのタイミングには、宇宙レベルの意味が込められています。<br><br>
-          短期的な結果を求めず、この関係をじっくりと育てていくことで、人生において最も重要な絆のひとつとなる可能性を秘めています。<br><br>
-          焦りを手放し、あなたらしさを大切にしながら関わり続けてください。その誠実さが、相手の心を確実に動かしていきます。
-        </div>
-        <div class="verdict-badge">
-          ✨ 縁の強さ：非常に深い
-        </div>
-      </div>
-    </div>
-
-    <div style="padding: 0 20px 24px;">
-      <div class="info-card" style="border-color: rgba(192,132,252,0.3);">
-        <div class="card-header">
-          <div class="card-icon">📌</div>
-          <div class="card-title">今すぐできること</div>
-        </div>
-        <div class="card-body">
-          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="color: var(--accent); font-size: 16px; margin-top: 1px;">①</span>
-              <span>普段の会話の中で、相手の話を「解決しよう」とせず、ただ「聞く」ことを意識する</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="color: var(--accent); font-size: 16px; margin-top: 1px;">②</span>
-              <span>週に一度、短くても良いのでメッセージや会話で存在を示す</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="color: var(--accent); font-size: 16px; margin-top: 1px;">③</span>
-              <span>相手の好きなものや興味を、さりげなく覚えておく</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- フッター -->
-<div class="footer">
-  <div class="footer-text">
-    鑑定番号 MS-2026-V3<br>
-    この鑑定書はあなただけのために作成されました<br>
-    © 2026 縁結び鑑定
+<!-- 日付タブ -->
+<div class="date-tabs">
+  <div class="date-tab active" onclick="selectDate(this)">
+    <div class="day-label">本日</div>
+    <div class="day-date" id="todayDate">6月5日</div>
   </div>
+  <div class="date-tab" onclick="selectDate(this)">
+    <div class="day-label">明日</div>
+    <div class="day-date" id="tomorrowDate">6月6日</div>
+  </div>
+</div>
+
+<!-- 鑑定ボタン -->
+<button class="start-btn" onclick="startReading()">鑑定を開始する</button>
+
+<!-- 統計 -->
+<div class="stats">
+  <span>累計アクセス 265</span>
+  <span>ユニーク訪問者 85</span>
 </div>
 
 <script>
-function showTab(tabName) {
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tabName).classList.add('active');
-  event.target.classList.add('active');
-}
+  // 日付設定
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const fmt = d => `${d.getMonth()+1}月${d.getDate()}日`;
+  document.getElementById('todayDate').textContent = fmt(today);
+  document.getElementById('tomorrowDate').textContent = fmt(tomorrow);
+
+  // 名前候補
+  function setName(name) {
+    document.getElementById('partnerName').value = name;
+  }
+
+  // 関係性選択
+  function selectRel(btn) {
+    document.querySelectorAll('.rel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // 日付選択
+  function selectDate(tab) {
+    document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  }
+
+  // 鑑定開始
+  function startReading() {
+    const name = document.getElementById('partnerName').value;
+    if (!name.trim()) {
+      alert('お相手の名前を入力してください');
+      return;
+    }
+    window.location.href = 'result.html?name=' + encodeURIComponent(name);
+  }
 </script>
 
 </body>
