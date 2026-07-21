@@ -526,14 +526,14 @@
   </div>
   <div class="select-row">
     <select id="blood" onchange="saveFixInfo()">
-      <option value="" selected disabled>血液型</option>
+      <option value="" selected>未選択</option>
       <option>A型</option>
       <option>O型</option>
       <option>B型</option>
       <option>AB型</option>
     </select>
     <select id="eto" onchange="saveFixInfo()">
-      <option value="" selected disabled>干支</option>
+      <option value="" selected>未選択</option>
       <option>子</option>
       <option>丑</option>
       <option>寅</option>
@@ -548,7 +548,7 @@
       <option>亥</option>
     </select>
     <select id="seiza" onchange="saveFixInfo()">
-      <option value="" selected disabled>星座</option>
+      <option value="" selected>未選択</option>
       <option>牡羊座</option>
       <option>牡牛座</option>
       <option>双子座</option>
@@ -565,10 +565,10 @@
   </div>
   <div class="select-row">
     <select id="year" onchange="saveFixInfo()">
-      <option value="" selected disabled>年</option>
+      <option value="" selected>未選択</option>
     </select>
     <select id="month" onchange="saveFixInfo()">
-      <option value="" selected disabled>月</option>
+      <option value="" selected>未選択</option>
       <option>1月</option>
       <option>2月</option>
       <option>3月</option>
@@ -583,7 +583,7 @@
       <option>12月</option>
     </select>
     <select id="day" onchange="saveFixInfo()">
-      <option value="" selected disabled>日</option>
+      <option value="" selected>未選択</option>
       <option>1日</option>
       <option>2日</option>
       <option>3日</option>
@@ -629,14 +629,14 @@
   </div>
   <div class="select-row">
     <select id="pBlood">
-      <option value="" selected disabled>血液型(任意)</option>
+      <option value="" selected>未選択</option>
       <option>A型</option>
       <option>O型</option>
       <option>B型</option>
       <option>AB型</option>
     </select>
     <select id="pEto">
-      <option value="" selected disabled>干支(任意)</option>
+      <option value="" selected>未選択</option>
       <option>子</option>
       <option>丑</option>
       <option>寅</option>
@@ -651,7 +651,7 @@
       <option>亥</option>
     </select>
     <select id="pSeiza">
-      <option value="" selected disabled>星座(任意)</option>
+      <option value="" selected>未選択</option>
       <option>牡羊座</option>
       <option>牡牛座</option>
       <option>双子座</option>
@@ -668,10 +668,10 @@
   </div>
   <div class="select-row">
     <select id="pYear">
-      <option value="" selected disabled>年(任意)</option>
+      <option value="" selected>未選択</option>
     </select>
     <select id="pMonth">
-      <option value="" selected disabled>月(任意)</option>
+      <option value="" selected>未選択</option>
       <option>1月</option>
       <option>2月</option>
       <option>3月</option>
@@ -686,7 +686,7 @@
       <option>12月</option>
     </select>
     <select id="pDay">
-      <option value="" selected disabled>日(任意)</option>
+      <option value="" selected>未選択</option>
       <option>1日</option>
       <option>2日</option>
       <option>3日</option>
@@ -913,8 +913,13 @@
       alert('お相手の名前を入力してください');
       return;
     }
+    const relBtn = document.querySelector('.rel-btn.active');
+    if (!relBtn) {
+      alert('お相手との関係性を選択してください');
+      return;
+    }
     addHistoryName(name);
-    const rel = document.querySelector('.rel-btn.active')?.textContent || '友人';
+    const rel = relBtn.textContent;
     const activeTab = document.querySelector('.date-tab.active .day-date').textContent;
 
     const pBlood = document.getElementById('pBlood').value;
