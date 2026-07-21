@@ -456,7 +456,7 @@
       <div class="guide-num">2</div>
       <div class="guide-text">
         <h4>お相手の名前を入力</h4>
-        <p>鑑定したいお相手の名前を入力してください。候補タグから選ぶこともできます。✕ボタンでタグを削除できます。</p>
+        <p>鑑定したいお相手の名前を入力してください。鑑定すると履歴タグとして残ります。✕ボタンでタグを削除できます。</p>
       </div>
     </div>
 
@@ -503,23 +503,23 @@
   <div class="card-label">
     あなた
     <label class="fix-check">
-      <input type="checkbox" id="fixCheck"> 情報を固定
+      <input type="checkbox" id="fixCheck" onchange="onFixCheckChange()"> 情報を固定
     </label>
   </div>
   <div class="select-row">
-    <select id="blood">
+    <select id="blood" onchange="saveFixInfo()">
       <option value="" selected disabled>血液型</option>
       <option>A型</option>
       <option>O型</option>
       <option>B型</option>
       <option>AB型</option>
     </select>
-    <select id="eto">
+    <select id="eto" onchange="saveFixInfo()">
       <option value="" selected disabled>干支</option>
-      <option>寅</option>
-      <option>卯</option>
       <option>子</option>
       <option>丑</option>
+      <option>寅</option>
+      <option>卯</option>
       <option>辰</option>
       <option>巳</option>
       <option>午</option>
@@ -529,7 +529,7 @@
       <option>戌</option>
       <option>亥</option>
     </select>
-    <select id="seiza">
+    <select id="seiza" onchange="saveFixInfo()">
       <option value="" selected disabled>星座</option>
       <option>牡羊座</option>
       <option>牡牛座</option>
@@ -546,7 +546,7 @@
     </select>
   </div>
   <div class="select-row">
-    <select id="year">
+    <select id="year" onchange="saveFixInfo()">
       <option value="" selected disabled>年</option>
       <option>1955年</option>
       <option>1960年</option>
@@ -559,7 +559,7 @@
       <option>1995年</option>
       <option>2000年</option>
     </select>
-    <select id="month">
+    <select id="month" onchange="saveFixInfo()">
       <option value="" selected disabled>月</option>
       <option>1月</option>
       <option>2月</option>
@@ -574,7 +574,7 @@
       <option>11月</option>
       <option>12月</option>
     </select>
-    <select id="day">
+    <select id="day" onchange="saveFixInfo()">
       <option value="" selected disabled>日</option>
       <option>1日</option>
       <option>5日</option>
@@ -629,6 +629,9 @@
 </div>
 
 <script>
+  const FIX_KEY = 'aisyo_fixInfo';
+  const HISTORY_KEY = 'aisyo_partnerHistory';
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -636,6 +639,100 @@
   document.getElementById('todayDate').textContent = fmt(today);
   document.getElementById('tomorrowDate').textContent = fmt(tomorrow);
 
+  /* ===== 情報を固定 ===== */
+  function loadFixInfo() {
+    try {
+      const raw = localStorage.getItem(FIX_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      document.getElementById('fixCheck').checked = true;
+      if (data.blood) document.getElementById('blood').value = data.blood;
+      if (data.eto) document.getElementById('eto').value = data.eto;
+      if (data.seiza) document.getElementById('seiza').value = data.seiza;
+      if (data.year) document.getElementById('year').value = data.year;
+      if (data.month) document.getElementById('month').value = data.month;
+      if (data.day) document.getElementById('day').value = data.day;
+    } catch (e) {}
+  }
+
+  function saveFixInfo() {
+    if (!document.getElementById('fixCheck').checked) return;
+    const data = {
+      blood: document.getElementById('blood').value,
+      eto: document.getElementById('eto').value,
+      seiza: document.getElementById('seiza').value,
+      year: document.getElementById('year').value,
+      month: document.getElementById('month').value,
+      day: document.getElementById('day').value,
+    };
+    localStorage.setItem(FIX_KEY, JSON.stringify(data));
+  }
+
+  function onFixCheckChange() {
+    if (document.getElementById('fixCheck').checked) {
+      saveFixInfo();
+    } else {
+      localStorage.removeItem(FIX_KEY);
+    }
+  }
+
+  /* ===== お相手の名前履歴 ===== */
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      renderHistory(arr);
+    } catch (e) {
+      renderHistory([]);
+    }
+  }
+
+  function renderHistory(arr) {
+    const wrap = document.getElementById('suggestTags');
+    wrap.innerHTML = '';
+    arr.forEach(name => {
+      const div = document.createElement('div');
+      div.className = 'suggest-tag-wrap';
+
+      const span = document.createElement('span');
+      span.className = 'suggest-tag';
+      span.textContent = name;
+      span.onclick = () => setName(name);
+
+      const btn = document.createElement('button');
+      btn.className = 'tag-del-btn';
+      btn.textContent = '✕';
+      btn.onclick = () => removeHistoryName(name, div);
+
+      div.appendChild(span);
+      div.appendChild(btn);
+      wrap.appendChild(div);
+    });
+  }
+
+  function addHistoryName(name) {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      let arr = raw ? JSON.parse(raw) : [];
+      arr = arr.filter(n => n !== name);
+      arr.unshift(name);
+      if (arr.length > 10) arr = arr.slice(0, 10);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+      renderHistory(arr);
+    } catch (e) {}
+  }
+
+  function removeHistoryName(name, el) {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      let arr = raw ? JSON.parse(raw) : [];
+      arr = arr.filter(n => n !== name);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+    } catch (e) {}
+    el.remove();
+  }
+
+  /* ===== 名前入力 ===== */
   function onNameInput() {
     const val = document.getElementById('partnerName').value;
     const btn = document.getElementById('clearBtn');
@@ -655,10 +752,6 @@
   function setName(name) {
     document.getElementById('partnerName').value = name;
     document.getElementById('clearBtn').classList.add('visible');
-  }
-
-  function removeTag(btn) {
-    btn.closest('.suggest-tag-wrap').remove();
   }
 
   function selectRel(btn) {
@@ -683,10 +776,15 @@
       alert('お相手の名前を入力してください');
       return;
     }
+    addHistoryName(name);
     const rel = document.querySelector('.rel-btn.active')?.textContent || '友人';
     const activeTab = document.querySelector('.date-tab.active .day-date').textContent;
     window.location.href = 'result.html?name=' + encodeURIComponent(name) + '&rel=' + encodeURIComponent(rel) + '&date=' + encodeURIComponent(activeTab);
   }
+
+  /* ===== 初期読み込み ===== */
+  loadFixInfo();
+  loadHistory();
 </script>
 
 </body>
