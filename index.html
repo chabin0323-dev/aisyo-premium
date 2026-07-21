@@ -231,6 +231,24 @@
     color: var(--accent2);
   }
 
+  .relation-section {
+    background: rgba(0,0,0,0.18);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+
+  .relation-heading {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .relation-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -702,16 +720,19 @@
       <option>31日</option>
     </select>
   </div>
-  <div class="relation-grid">
-    <button class="rel-btn" onclick="selectRel(this)">恋人</button>
-    <button class="rel-btn" onclick="selectRel(this)">片思い</button>
-    <button class="rel-btn" onclick="selectRel(this)">夫婦</button>
-    <button class="rel-btn" onclick="selectRel(this)">友人</button>
-  </div>
-  <div class="relation-grid row2">
-    <button class="rel-btn" onclick="selectRel(this)">仕事仲間</button>
-    <button class="rel-btn" onclick="selectRel(this)">商談相手</button>
-    <button class="rel-btn" onclick="selectRel(this)">上司</button>
+  <div class="relation-section">
+    <div class="relation-heading">💞 関係性</div>
+    <div class="relation-grid">
+      <button class="rel-btn" onclick="selectRel(this)">恋人</button>
+      <button class="rel-btn" onclick="selectRel(this)">片思い</button>
+      <button class="rel-btn" onclick="selectRel(this)">夫婦</button>
+      <button class="rel-btn" onclick="selectRel(this)">友人</button>
+    </div>
+    <div class="relation-grid row2">
+      <button class="rel-btn" onclick="selectRel(this)">仕事仲間</button>
+      <button class="rel-btn" onclick="selectRel(this)">商談相手</button>
+      <button class="rel-btn" onclick="selectRel(this)">上司</button>
+    </div>
   </div>
 </div>
 
