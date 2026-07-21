@@ -503,20 +503,22 @@
   <div class="card-label">
     あなた
     <label class="fix-check">
-      <input type="checkbox" id="fixCheck" checked> 情報を固定
+      <input type="checkbox" id="fixCheck"> 情報を固定
     </label>
   </div>
   <div class="select-row">
     <select id="blood">
+      <option value="" selected disabled>血液型</option>
       <option>A型</option>
-      <option selected>O型</option>
+      <option>O型</option>
       <option>B型</option>
       <option>AB型</option>
     </select>
     <select id="eto">
+      <option value="" selected disabled>干支</option>
       <option>寅</option>
       <option>卯</option>
-      <option selected>子</option>
+      <option>子</option>
       <option>丑</option>
       <option>辰</option>
       <option>巳</option>
@@ -528,7 +530,8 @@
       <option>亥</option>
     </select>
     <select id="seiza">
-      <option selected>牡羊座</option>
+      <option value="" selected disabled>星座</option>
+      <option>牡羊座</option>
       <option>牡牛座</option>
       <option>双子座</option>
       <option>蟹座</option>
@@ -544,8 +547,9 @@
   </div>
   <div class="select-row">
     <select id="year">
+      <option value="" selected disabled>年</option>
       <option>1955年</option>
-      <option selected>1960年</option>
+      <option>1960年</option>
       <option>1965年</option>
       <option>1970年</option>
       <option>1975年</option>
@@ -556,9 +560,10 @@
       <option>2000年</option>
     </select>
     <select id="month">
+      <option value="" selected disabled>月</option>
       <option>1月</option>
       <option>2月</option>
-      <option selected>3月</option>
+      <option>3月</option>
       <option>4月</option>
       <option>5月</option>
       <option>6月</option>
@@ -570,12 +575,13 @@
       <option>12月</option>
     </select>
     <select id="day">
+      <option value="" selected disabled>日</option>
       <option>1日</option>
       <option>5日</option>
       <option>10日</option>
       <option>15日</option>
       <option>20日</option>
-      <option selected>23日</option>
+      <option>23日</option>
       <option>25日</option>
       <option>28日</option>
       <option>31日</option>
@@ -590,20 +596,12 @@
     <button class="clear-btn" id="clearBtn" onclick="clearName()">✕</button>
   </div>
   <div class="suggest-tags" id="suggestTags">
-    <div class="suggest-tag-wrap">
-      <span class="suggest-tag" onclick="setName('中森明菜')">中森明菜</span>
-      <button class="tag-del-btn" onclick="removeTag(this)">✕</button>
-    </div>
-    <div class="suggest-tag-wrap">
-      <span class="suggest-tag" onclick="setName('三宅正記')">三宅正記</span>
-      <button class="tag-del-btn" onclick="removeTag(this)">✕</button>
-    </div>
   </div>
   <div class="relation-grid">
     <button class="rel-btn" onclick="selectRel(this)">恋人</button>
     <button class="rel-btn" onclick="selectRel(this)">片思い</button>
     <button class="rel-btn" onclick="selectRel(this)">夫婦</button>
-    <button class="rel-btn active" onclick="selectRel(this)">友人</button>
+    <button class="rel-btn" onclick="selectRel(this)">友人</button>
   </div>
   <div class="relation-grid row2">
     <button class="rel-btn" onclick="selectRel(this)">仕事仲間</button>
