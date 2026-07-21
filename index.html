@@ -507,7 +507,8 @@
     <div class="guide-note">
       💡 鑑定結果はお相手の名前と関係性によって変わります。<br>
       ✨ タブを切り替えて様々な角度から相性を確認できます。<br>
-      🔄 何度でも鑑定できます。お気軽にお試しください。
+      🔄 何度でも鑑定できます。お気軽にお試しください。<br>
+      🔒 入力された内容はサーバーに送信・保存されることはなく、すべてお使いの端末内だけで処理されます。安心してご利用ください。
     </div>
   </div>
 </div>
@@ -523,6 +524,10 @@
     <label class="fix-check">
       <input type="checkbox" id="fixCheck" onchange="onFixCheckChange()"> 情報を固定
     </label>
+  </div>
+  <div class="name-wrap">
+    <input type="text" class="name-input" id="myName" placeholder="あなたの名前を入力" oninput="onMyNameInput()" onchange="saveFixInfo()">
+    <button class="clear-btn" id="myClearBtn" onclick="clearMyName()">✕</button>
   </div>
   <div class="select-row">
     <select id="blood" onchange="saveFixInfo()">
@@ -783,6 +788,10 @@
       if (!raw) return;
       const data = JSON.parse(raw);
       document.getElementById('fixCheck').checked = true;
+      if (data.myName) {
+        document.getElementById('myName').value = data.myName;
+        document.getElementById('myClearBtn').classList.add('visible');
+      }
       if (data.blood) document.getElementById('blood').value = data.blood;
       if (data.eto) document.getElementById('eto').value = data.eto;
       if (data.seiza) document.getElementById('seiza').value = data.seiza;
@@ -795,6 +804,7 @@
   function saveFixInfo() {
     if (!document.getElementById('fixCheck').checked) return;
     const data = {
+      myName: document.getElementById('myName').value,
       blood: document.getElementById('blood').value,
       eto: document.getElementById('eto').value,
       seiza: document.getElementById('seiza').value,
@@ -811,6 +821,24 @@
     } else {
       localStorage.removeItem(FIX_KEY);
     }
+  }
+
+  /* ===== あなたの名前 ===== */
+  function onMyNameInput() {
+    const val = document.getElementById('myName').value;
+    const btn = document.getElementById('myClearBtn');
+    if (val.length > 0) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+
+  function clearMyName() {
+    document.getElementById('myName').value = '';
+    document.getElementById('myClearBtn').classList.remove('visible');
+    document.getElementById('myName').focus();
+    saveFixInfo();
   }
 
   /* ===== お相手の名前履歴 ===== */
@@ -908,6 +936,11 @@
   }
 
   function startReading() {
+    const myName = document.getElementById('myName').value.trim();
+    if (!myName) {
+      alert('あなたの名前を入力してください');
+      return;
+    }
     const name = document.getElementById('partnerName').value.trim();
     if (!name) {
       alert('お相手の名前を入力してください');
@@ -930,6 +963,7 @@
     const pDay = document.getElementById('pDay').value;
 
     const params = new URLSearchParams({
+      myName: myName,
       name: name,
       rel: rel,
       date: activeTab
