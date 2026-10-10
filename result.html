@@ -932,31 +932,282 @@ function showTab(tabName) {
 
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const pName = params.get('name');
-  const pRel = params.get('rel');
-  const pDate = params.get('date');
-  if (pName) {
-    document.querySelectorAll('.name-partner').forEach(el => el.textContent = pName);
-    document.querySelectorAll('.partner-name-ref').forEach(el => el.textContent = pName);
-    document.title = '縁結び鑑定 | あなたと' + pName + 'の相性';
+/* ===== 入力情報から鑑定を作る（同じ入力なら毎回同じ結果） ===== */
+(function () {
+  const q = new URLSearchParams(window.location.search);
+  const P = q.get('name') || 'お相手';
+  const REL = q.get('rel') || '恋人';
+  const MY = q.get('myName') || '';
+  const DATE = q.get('date');
+
+  /* ---------- 基本データ ---------- */
+  const SEIZA = ['牡羊座','牡牛座','双子座','蟹座','獅子座','乙女座','天秤座','蠍座','射手座','山羊座','水瓶座','魚座'];
+  const ELEM = { 牡羊座:'火', 獅子座:'火', 射手座:'火', 牡牛座:'地', 乙女座:'地', 山羊座:'地', 双子座:'風', 天秤座:'風', 水瓶座:'風', 蟹座:'水', 蠍座:'水', 魚座:'水' };
+  const ETO = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const ETO_NAME = { 子:'子（ねずみ）', 丑:'丑（うし）', 寅:'寅（とら）', 卯:'卯（うさぎ）', 辰:'辰（たつ）', 巳:'巳（へび）', 午:'午（うま）', 未:'未（ひつじ）', 申:'申（さる）', 酉:'酉（とり）', 戌:'戌（いぬ）', 亥:'亥（いのしし）' };
+
+  const num = (v) => { const m = (v || '').match(/\d+/); return m ? parseInt(m[0], 10) : null; };
+  function seizaFromDate(m, d) {
+    if (!m || !d) return null;
+    const edges = [20,19,21,20,21,22,23,23,23,24,23,22]; // 各月の境目
+    const idx = (d >= edges[m - 1]) ? (m + 9) % 12 : (m + 8) % 12; // 3/21〜 牡羊座
+    return SEIZA[idx];
   }
-  if (pRel) {
-    document.querySelectorAll('.meta-badge').forEach(el => el.textContent = '関係性：' + pRel);
+  function person(prefix) {
+    const y = num(q.get(prefix + 'Year')), m = num(q.get(prefix + 'Month')), d = num(q.get(prefix + 'Day'));
+    let seiza = q.get(prefix + 'Seiza') || seizaFromDate(m, d);
+    let eto = q.get(prefix + 'Eto') || (y ? ETO[((y - 4) % 12 + 12) % 12] : null);
+    const blood = q.get(prefix + 'Blood') || null;
+    let life = null;
+    if (y && m && d) {
+      let s = String(y) + String(m) + String(d);
+      let n = s.split('').reduce((a, c) => a + +c, 0);
+      while (n > 9) n = String(n).split('').reduce((a, c) => a + +c, 0);
+      life = n;
+    }
+    return { seiza, eto, blood, life, elem: seiza ? ELEM[seiza] : null };
   }
-  if (pDate) {
-    // 日付バッジを更新（例: "6月5日" → "2026年6月5日 鑑定書"）
-    const now = new Date();
-    const year = now.getFullYear();
-    document.querySelectorAll('.date-badge').forEach(el => {
-      // テキストノードだけ更新
-      el.childNodes.forEach(node => {
-        if (node.nodeType === 3 && node.textContent.trim()) {
-          node.textContent = year + '年' + pDate + ' 鑑定書';
-        }
-      });
-    });
+  const me = person('my');
+  const pt = person('p');
+
+  /* ---------- 乱数（入力から決まるので毎回同じ） ---------- */
+  const key = [MY, P, REL, JSON.stringify(me), JSON.stringify(pt)].join('|');
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  let st = h >>> 0;
+  const rnd = () => { st = (st + 0x6D2B79F5) >>> 0; let t = st; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const jitter = (n) => Math.round((rnd() * 2 - 1) * n);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, Math.round(v)));
+
+  /* ---------- 相性の計算 ---------- */
+  // 星座（エレメント）
+  let zType = null, zScore = null;
+  if (me.elem && pt.elem) {
+    const pair = [me.elem, pt.elem].sort().join('');
+    const T = { 火火:'same', 地地:'same', 風風:'same', 水水:'same', 火風:'boost', 地水:'boost', 地火:'friction', 水風:'friction', 水火:'opposite', 地風:'opposite' };
+    zType = T[pair];
+    zScore = { same: 88, boost: 92, friction: 70, opposite: 63 }[zType];
   }
+  // 干支
+  let eType = null, eScore = null;
+  if (me.eto && pt.eto) {
+    const a = ETO.indexOf(me.eto), b = ETO.indexOf(pt.eto), d = Math.abs(a - b);
+    if (d === 0) eType = 'same';
+    else if (d === 4 || d === 8) eType = 'sango';
+    else if ((a + b) % 12 === 1) eType = 'rikugo';
+    else if (d === 6) eType = 'chu';
+    else eType = 'normal';
+    eScore = { same: 80, sango: 93, rikugo: 90, chu: 62, normal: 74 }[eType];
+  }
+  // 血液型
+  let bScore = null;
+  if (me.blood && pt.blood) {
+    const k = [me.blood, pt.blood].sort().join('-');
+    const B = { 'A型-A型':80, 'A型-O型':88, 'A型-B型':63, 'A型-AB型':78, 'O型-O型':82, 'B型-O型':86, 'AB型-O型':67, 'B型-B型':80, 'AB型-B型':84, 'AB型-AB型':76 };
+    bScore = B[k] ?? B[[me.blood, pt.blood].join('-')] ?? B[[pt.blood, me.blood].join('-')] ?? 75;
+  }
+  // 運命数
+  let nType = null, nScore = null;
+  if (me.life && pt.life) {
+    const a = me.life, b = pt.life;
+    if (a === b) { nType = 'same'; nScore = 86; }
+    else if (a + b === 10) { nType = 'pair'; nScore = 93; }
+    else if (Math.abs(a - b) % 3 === 0) { nType = 'harmony'; nScore = 89; }
+    else { nType = 'different'; nScore = 68 + ((a * b) % 5) * 4; }
+  }
+  const parts = [zScore, eScore, bScore, nScore].filter(v => v !== null);
+  const base = parts.length ? parts.reduce((a, c) => a + c, 0) / parts.length : 70 + rnd() * 18;
+  const total = clamp(base + jitter(4), 52, 97);
+  const tier = total >= 86 ? 4 : total >= 76 ? 3 : total >= 66 ? 2 : 1;
+
+  /* ---------- 関係性 ---------- */
+  const CAT = { 片思い: 'crush', 恋人: 'couple', 夫婦: 'married', 友人: 'friend', 仕事仲間: 'work', 商談相手: 'work', 上司: 'work' }[REL] || 'couple';
+
+  /* ---------- 書き込みヘルパー ---------- */
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const setBody = (tab, i, html) => { const el = $$('#tab-' + tab + ' .card-body')[i]; if (el) el.innerHTML = html; };
+  const setTitle = (tab, i, text) => { const el = $$('#tab-' + tab + ' .card-title')[i]; if (el) el.innerHTML = text; };
+  const N = P + 'さん';
+
+  /* ===== 点数タブ ===== */
+  const soul = clamp((nScore ?? zScore ?? base) + jitter(6) + 3, 55, 98);
+  const depth = clamp((eScore ?? base) + jitter(6), 55, 98);
+  const growth = clamp(62 + (100 - total) * 0.7 + rnd() * 12, 64, 98);
+  const big = [total, soul, depth, growth];
+  $$('#tab-score .score-card').forEach((card, i) => {
+    $('.score-value', card).textContent = big[i];
+    $('.score-bar-fill', card).style.width = big[i] + '%';
+  });
+  const det = [
+    clamp((zScore ?? base) + jitter(7), 50, 98),                 // 感情の相性
+    clamp((bScore ?? base) + jitter(7), 50, 98),                 // 価値観の一致
+    clamp(((zScore ?? base) + (bScore ?? base)) / 2 + jitter(7), 50, 98), // コミュニケーション
+    clamp((eScore ?? base) + jitter(7), 50, 98),                 // 信頼と安心感
+    clamp((nScore ?? base) + jitter(7), 50, 98),                 // 未来のビジョン
+    clamp(((eScore ?? base) + (nScore ?? base)) / 2 + 6 + jitter(5), 50, 99) // カルマ
+  ];
+  $$('#tab-score .detail-item').forEach((row, i) => {
+    $('.detail-bar-fill', row).style.width = det[i] + '%';
+    $('.detail-score', row).textContent = det[i];
+  });
+
+  /* ===== 運命タブ ===== */
+  const destinyTitle = { 4: 'このご縁は、強い引力で結ばれています', 3: 'このご縁は、偶然より深い意味を持っています', 2: 'このご縁は、育てるほど輝きを増していきます', 1: 'このご縁は、試練を越えて本物になります' }[tier];
+  const dt = $('#tab-unmei .destiny-title'); if (dt) dt.textContent = destinyTitle;
+
+  const overall = {
+    4: `総合相性は${total}点。二人の運勢は、自然体のままでも足並みがそろいやすい、とても恵まれた組み合わせです。無理に合わせなくても、相手のペースが心地よく感じられるはずです。`,
+    3: `総合相性は${total}点。二人の運勢は伸びしろの大きいご縁です。焦って答えを出すより、やり取りの質を高めるほど相性は強くなっていきます。`,
+    2: `総合相性は${total}点。違いがあるからこそ惹かれ合う組み合わせです。お互いの「当たり前」を知るほど、関係は安定していきます。`,
+    1: `総合相性は${total}点。簡単に分かり合えるご縁ではありませんが、そのぶん乗り越えた先の結びつきは強くなります。今は相手を理解することが最大の開運行動です。`
+  }[tier];
+  const overallTail = { crush: `今は気持ちを伝える準備を整える段階です。`, couple: `今は二人の土台を固めるほど、未来が開けていきます。`, married: `今は日々の小さな感謝が、絆をさらに深めます。`, friend: `今は気負わない関わりが、信頼を育てます。`, work: `今は誠実な対応の積み重ねが、評価と信頼につながります。` }[CAT];
+  setBody('unmei', 0, overall + overallTail);
+
+  const pastLives = [
+    '遠い異国で共に旅をしていた仲間だったようです。初対面でもどこか懐かしく感じるのは、共に困難を乗り越えた記憶が魂に残っているからです。',
+    '前世では、同じ師のもとで学んだ兄弟弟子だったようです。相手の考えが言葉より先に伝わる瞬間があるのは、その名残です。',
+    '前世では、海辺の町で互いを支え合った家族だったようです。そばにいると安心できる感覚は、そのときの記憶から来ています。',
+    '前世では、離ればなれになった約束の相手だったようです。今世で再び出会ったのは、果たせなかった約束の続きを生きるためです。',
+    '前世では、同じ城に仕えた戦友だったようです。いざという時に頼りたくなるのは、命を預け合った信頼が残っているからです。',
+    '前世では、手紙だけでつながっていた遠い友人だったようです。言葉の選び方ひとつで心が動くのは、その頃の名残です。'
+  ];
+  const etoLine = {
+    sango: `干支の「三合」という強い吉縁でも結ばれており、困ったときほど自然と力を合わせられる関係です。`,
+    rikugo: `干支の「六合」という和合の縁があり、二人でいると不思議と物事が丸く収まります。`,
+    same: `同じ干支を持つ二人は価値観の根っこが近く、言わなくても通じる部分が多いでしょう。`,
+    chu: `干支は「冲（ちゅう）」の関係で、ぶつかり合うこともありますが、それが互いを成長させる刺激になります。`,
+    normal: `干支の関係は穏やかで、時間をかけるほど安定していくご縁です。`
+  }[eType] || `相手を理解しようとする姿勢が、運命の扉を開く鍵になります。`;
+  setBody('unmei', 1, pick(pastLives) + etoLine);
+
+  const hints = {
+    crush: [`今の${N}は、あなたを「気になる人」として意識し始めています。好意を一気に伝えるより、会話の回数を少しずつ増やす方が届きやすい時期です。`, `この恋は、勢いより「安心感」で進むご縁です。${N}が気軽に話しかけられる雰囲気を作ることが、何よりの近道になります。`],
+    couple: [`この関係は、ただ「好きかどうか」だけで判断しない方が良いご縁です。将来の話を少しずつ共有するほど、結びつきは強くなります。`, `二人に必要なのは、特別なイベントより日常の小さな約束です。守られた約束の数が、そのまま信頼の深さになります。`],
+    married: [`長く一緒にいるからこそ、言葉にしない感謝がたまりやすい時期です。一言の「ありがとう」が、関係の空気を大きく変えます。`, `二人の絆はすでに深いものです。今は相手の「一人の時間」を尊重することで、より心地よい関係になります。`],
+    friend: [`この友情は、損得を越えて長く続くご縁です。困ったときに思い出してもらえる存在であることが、関係をさらに深めます。`, `${N}にとって、あなたは本音を話せる貴重な相手です。ちょっとした近況報告が、絆を保つ一番の方法です。`],
+    work: [`この関係は、信頼を積み上げるほど大きな成果につながるご縁です。約束の期限や小さな報告を丁寧に守ることが、評価を決定づけます。`, `${N}は、あなたの仕事ぶりを想像以上によく見ています。結果だけでなく、途中経過を共有することで信頼が一気に高まります。`]
+  }[CAT];
+  setBody('unmei', 2, pick(hints));
+
+  const lifeText = (me.life && pt.life)
+    ? `あなたの運命数は「${me.life}」、${N}は「${pt.life}」。` + ({ same: '同じ数を持つ二人は、人生のテーマが重なり合っています。', pair: '合わせて10になる二人は、足りないものを補い合う「対の縁」です。', harmony: '響き合う数の組み合わせで、一緒にいるほど運気が整っていきます。', different: '異なる数を持つ二人は、互いに新しい世界を見せ合える関係です。' }[nType])
+    : '二人の間には、言葉を超えた感覚的な理解がすでに存在しています。';
+  setBody('unmei', 3, lifeText + 'この直感的な共鳴を大切にすることで、関係はより本物の領域へと進んでいきます。');
+
+  const starMsg = {
+    火: `${N}は情熱の「火」の星を持っています。迷うより、明るく行動するあなたの姿が一番の引力になります。`,
+    地: `${N}は堅実な「地」の星を持っています。派手さより、約束を守る誠実さが心を動かします。`,
+    風: `${N}は軽やかな「風」の星を持っています。会話の楽しさや新しい話題が、距離を縮める鍵になります。`,
+    水: `${N}は感受性豊かな「水」の星を持っています。気持ちに寄り添う一言が、何よりも深く届きます。`
+  }[pt.elem] || '今この時期は、急かすよりも「そばにいる」ことが最も強い引力になります。';
+  setBody('unmei', 4, starMsg + '宇宙の時計はすでに動き始めています。');
+
+  /* ===== 本音タブ ===== */
+  const honne = {
+    火: `${N}は、自分から動きたいタイプです。あなたに対しても「もっと知りたい」という気持ちを持っていますが、主導権を握られすぎると引いてしまう面もあります。`,
+    地: `${N}は、気持ちを確かめてから動く慎重なタイプです。表には出しませんが、あなたの言動を一つひとつ丁寧に見て、信頼できる人かどうかを感じ取っています。`,
+    風: `${N}は、気軽なやり取りの中で相手を知りたいタイプです。重い話より楽しい会話を通して、あなたへの好感を少しずつ育てています。`,
+    水: `${N}は、言葉より空気で気持ちを感じ取るタイプです。あなたのちょっとした態度の変化にも敏感で、内心では特別な存在として意識しています。`
+  }[pt.elem] || `表面上は穏やかに接していますが、内側ではあなたのことを特別な存在として意識し始めています。ただ、自分の感情を表に出すことへのためらいがあります。`;
+  const honneTail = { crush: '今は好意を伝えるより、安心できる相手だと感じてもらうことが先決です。', couple: '二人の将来について、実はあなたより具体的に考えている面もあります。', married: '口には出さなくても、あなたへの感謝はしっかり心にあります。', friend: 'あなたとの時間を「素の自分でいられる時間」として大切にしています。', work: 'あなたの能力を評価しつつ、もう一歩踏み込んだ信頼関係を築きたいと考えています。' }[CAT];
+  setBody('honshitsu', 0, honne + honneTail);
+
+  const wants = {
+    'A型': `${N}は、あなたに「安心して本音を言える関係」を求めています。きちんと話を聞いてもらえることが、何よりの信頼の証になります。`,
+    'O型': `${N}は、あなたに「頼りにされること」を求めています。相談したり、ちょっとした手助けをお願いしたりすると、距離がぐっと縮まります。`,
+    'B型': `${N}は、あなたに「自由を認めてくれる関係」を求めています。束縛より、相手の興味を一緒に楽しむ姿勢が心をつかみます。`,
+    'AB型': `${N}は、あなたに「ほどよい距離感」を求めています。近すぎず遠すぎない関わり方が、相手にとって一番心地よい状態です。`
+  }[pt.blood] || `${N}は、あなたに「安心して本音を言える関係」を求めています。完璧な姿より、少し不完全でも正直な自分でいられる場所を探しています。`;
+  setBody('honshitsu', 1, wants);
+
+  const psych = {
+    4: `今の${N}は、あなたに対して心を開きやすい状態です。ためらわず、素直な気持ちを少しずつ言葉にしてみてください。`,
+    3: `今の${N}は、あなたへの好意と慎重さの間で揺れています。急かすより、「この人は安全だ」と感じてもらえる積み重ねが効果的です。`,
+    2: `今の${N}は、自分のペースを大切にしたい時期です。返事が遅くても気にせず、相手の都合を尊重する姿勢が評価を上げます。`,
+    1: `今の${N}には、過去の経験から「また傷つくかもしれない」という防衛本能が働いています。結果を急がず、信頼を一つずつ積み上げることが鍵です。`
+  }[tier];
+  setBody('honshitsu', 2, psych);
+
+  /* ===== 分析タブ ===== */
+  if (zType) {
+    setTitle('bunseki', 0, `星座の相性（${me.seiza} × ${pt.seiza}）`);
+    setBody('bunseki', 0, {
+      same: `どちらも「${me.elem}」のエレメントを持つ二人は、感じ方や物事の進め方がよく似ています。説明しなくても分かり合える一方、同じところでつまずきやすいので、どちらかが一歩引く場面を作ると安定します。`,
+      boost: `あなたの「${me.elem}」と${N}の「${pt.elem}」は、互いを高め合う組み合わせです。一緒にいるとやる気や安心感が自然と湧き、二人で何かに取り組むほど関係が深まります。`,
+      friction: `あなたの「${me.elem}」と${N}の「${pt.elem}」は、ペースの違いが出やすい組み合わせです。すれ違いを感じたら、相手のやり方を「間違い」ではなく「違い」として受け止めることが鍵になります。`,
+      opposite: `あなたの「${me.elem}」と${N}の「${pt.elem}」は、正反対の性質を持つ組み合わせです。だからこそ自分にないものに強く惹かれます。違いを面白がれるようになると、最強のパートナーシップになります。`
+    }[zType]);
+  } else {
+    setBody('bunseki', 0, pick([`感情の波長が近く、相手の気分の変化を自然と感じ取れる関係です。この感受性の高さが、二人の絆を静かに深めていく源泉になっています。`, `考え方の土台が似ているぶん、小さな違いが気になりやすい関係です。違いを言葉にして共有することで、絆はより強くなります。`]) + '<br><span style="font-size:11px;opacity:.6">※生年月日か星座を入力すると、より詳しい鑑定になります</span>');
+  }
+  if (eType) {
+    setTitle('bunseki', 1, `干支の相性（${ETO_NAME[me.eto]} × ${ETO_NAME[pt.eto]}）`);
+    setBody('bunseki', 1, {
+      sango: `二人は「三合」と呼ばれる、干支の中でも特に強い吉縁の組み合わせです。目標を共有すると驚くほど息が合い、困難な場面ほど結束が強まります。`,
+      rikugo: `二人は「六合」と呼ばれる和合の組み合わせです。性格は違っても不思議と調和し、そばにいるだけで互いの運気を支え合えます。`,
+      same: `同じ干支を持つ二人は、人生のリズムが重なりやすい関係です。共感できる場面が多い一方、頑固さも似ているので、譲り合いを意識するとより円満になります。`,
+      chu: `二人は「冲（ちゅう）」と呼ばれる、正面から向き合う組み合わせです。意見がぶつかることもありますが、それは本音で関われる証拠。乗り越えるたびに絆が強くなります。`,
+      normal: `二人の干支は穏やかな関係にあります。急激な変化は少ないものの、時間をかけるほど安定し、自然と信頼が育っていくご縁です。`
+    }[eType]);
+  }
+  if (me.blood && pt.blood) {
+    setTitle('bunseki', 2, `血液型の相性（${me.blood} × ${pt.blood}）`);
+    const bt = bScore >= 84 ? `相性の良い組み合わせで、お互いの長所が自然と引き出されます。あなたの気づかいが、${N}の居心地の良さに直結します。`
+      : bScore >= 76 ? `バランスの取れた組み合わせです。似ている部分と違う部分がほどよく混ざり、飽きのこない関係を築けます。`
+      : `価値観の違いが出やすい組み合わせですが、そのぶん学び合えることも多い関係です。相手の考え方を一度受け止めてから自分の意見を伝えると、ぐっと噛み合います。`;
+    setBody('bunseki', 2, bt);
+  }
+
+  /* ===== 流れタブ ===== */
+  const flow = {
+    crush: [['気持ちを育てる時期', `まずは${N}との会話の回数を少しずつ増やす時期です。共通の話題を見つけることが、距離を縮める第一歩になります。`], ['心が近づく転換期', '相手からの反応が少しずつ柔らかくなってきます。二人きりで話せる機会が訪れたら、迷わず大切にしてください。'], ['想いを伝える岐路', '二人の関係がはっきりしてくる時期です。正直な気持ちを伝えるなら、このタイミングが最も届きやすいでしょう。'], ['新しい関係の始まり', 'ここまで丁寧に関係を育ててきたなら、二人は特別な存在として向き合えるようになっています。']],
+    couple: [['信頼を深める時期', '今は日常の小さな約束を大切にする時期です。特別なことよりも、安定した存在感を示すことが鍵になります。'], ['本音が見え始める転換期', `${N}が将来について本音を話してくれる場面が増えてきます。否定せずに受け止めることで、心が通じ合う瞬間が訪れます。`], ['二人の未来が定まる岐路', '二人の方向性がはっきりしてくる時期です。将来の話を具体的にするほど、関係はさらに確かなものになります。'], ['揺るがない絆へ', 'ここまで丁寧に関係を育ててきたなら、二人は簡単には壊れない強い絆で結ばれています。']],
+    married: [['感謝を言葉にする時期', '慣れから省きがちな「ありがとう」を、あえて言葉にする時期です。小さな一言が家庭の空気を明るくします。'], ['二人の時間を取り戻す転換期', '忙しさの中でも、二人だけで過ごす時間を意識的に作ると、出会った頃の気持ちがよみがえります。'], ['新しい目標を持つ岐路', '旅行や住まい、これからの暮らしなど、二人で共有する目標を持つと関係がさらに前向きに動きます。'], ['深い安らぎの時期', '互いの存在が当たり前でありながら特別な、最も安定した関係へと育っていきます。']],
+    friend: [['気軽につながる時期', '今は気負わない連絡を大切にする時期です。ちょっとした近況報告が、関係を温め続けます。'], ['本音で話せる転換期', `${N}が悩みや本音を打ち明けてくれる場面が増えてきます。聞き役に徹することで、信頼が一気に深まります。`], ['関係が広がる岐路', '一緒に新しい場所へ出かけたり、共通の目標を持ったりすると、友情がもう一段深いものになります。'], ['一生ものの縁へ', '時間がたっても変わらず頼り合える、人生の財産となる関係に育っていきます。']],
+    work: [['信頼を積み上げる時期', '今は小さな約束や報告を丁寧に守る時期です。確実な対応が、相手の評価を着実に上げていきます。'], ['協力が深まる転換期', `${N}との連携がスムーズになり、意見を求められる場面が増えてきます。自分の考えを率直に伝えると評価が高まります。`], ['成果が見える岐路', '二人で取り組んできたことが形になり始める時期です。ここでの成果が、今後の関係を大きく左右します。'], ['長く続く信頼関係へ', '互いになくてはならない存在として、次の機会にも声がかかる強い信頼関係が築かれます。']]
+  }[CAT];
+  $$('#tab-nagare .timeline-item').forEach((item, i) => {
+    $('h4', item).textContent = flow[i][0];
+    $('p', item).textContent = flow[i][1];
+  });
+
+  /* ===== 結論タブ ===== */
+  const concl = {
+    4: `あなたと${N}の縁は、総合${total}点という非常に恵まれた組み合わせです。二人が出会ったタイミングには、はっきりとした意味が込められています。`,
+    3: `あなたと${N}の縁は、総合${total}点。軽い偶然ではなく、育てるほど深まっていく確かなご縁です。`,
+    2: `あなたと${N}の縁は、総合${total}点。違いを持つ二人だからこそ、学び合い、支え合える可能性を秘めています。`,
+    1: `あなたと${N}の縁は、総合${total}点。簡単ではない分、乗り越えたときには他にない強い絆になります。`
+  }[tier];
+  const conclMid = { crush: '焦って結果を求めず、相手が安心して話せる存在になることを大切にしてください。', couple: '二人の未来を少しずつ言葉にしていくことで、関係はより確かなものになります。', married: '日々の感謝と小さな気づかいが、これからの二人をさらに幸せにしていきます。', friend: '肩の力を抜いた関わりを続けることで、人生を支え合う大切な縁になっていきます。', work: '誠実な対応を積み重ねることで、互いに欠かせないパートナーになっていきます。' }[CAT];
+  const ct = $('#tab-ketsuron .conclusion-text');
+  if (ct) ct.innerHTML = concl + '<br><br>' + conclMid + '<br><br>あなたらしさを大切にしながら関わり続けてください。その誠実さが、相手の心を確実に動かしていきます。';
+  const vb = $('#tab-ketsuron .verdict-badge');
+  if (vb) vb.textContent = '✨ 縁の強さ：' + { 4: '非常に深い', 3: '深い', 2: '育てがいのある縁', 1: '試練を越えて深まる縁' }[tier];
+
+  const acts = {
+    crush: ['共通の話題を一つ見つけて、次に会ったときに話しかける', `${N}の好きなものや興味を、さりげなく覚えておく`, '返信を急かさず、相手のペースに合わせる', '笑顔であいさつするなど、話しかけやすい雰囲気を作る', '二人きりで話せる短い時間を大切にする'],
+    couple: ['週に一度、将来やってみたいことを一つ話してみる', '小さな約束を必ず守り、信頼を積み上げる', `${N}の話を「解決しよう」とせず、ただ聞く時間を作る`, '感謝の気持ちを、その日のうちに言葉で伝える', '次のデートの予定を、相手の希望を聞きながら決める'],
+    married: ['一日一回、「ありがとう」を言葉にする', '月に一度、二人だけで過ごす時間を作る', `${N}の一人の時間を尊重する`, '家事や役割を、たまに交代してみる', '昔の思い出話をする時間を作る'],
+    friend: ['用事がなくても、気軽な近況メッセージを送る', `${N}の話を最後まで聞き、否定しない`, '一緒に行きたい場所を一つ提案してみる', '誕生日や大切な日を覚えておく', '困っていそうなときに、一言声をかける'],
+    work: ['依頼された件は、途中経過も一度報告する', '期限より少し早めに仕上げることを意識する', `${N}の意見を一度受け止めてから、自分の考えを伝える`, '感謝の言葉を、具体的な内容とあわせて伝える', '次の打ち合わせで、相手に役立つ情報を一つ持っていく']
+  }[CAT].slice();
+  const chosen = [];
+  while (chosen.length < 3) chosen.push(acts.splice(Math.floor(rnd() * acts.length), 1)[0]);
+  $$('#tab-ketsuron .card-body > div > div > span:last-child').forEach((el, i) => { if (chosen[i]) el.textContent = chosen[i]; });
+
+  /* ===== 名前・関係性・日付 ===== */
+  $$('.name-partner').forEach(el => el.textContent = P);
+  $$('.partner-name-ref').forEach(el => el.textContent = P);
+  document.title = '縁結び鑑定 | あなたと' + P + 'の相性';
+  $$('.meta-badge').forEach(el => el.textContent = '関係性：' + REL);
+  if (DATE) {
+    const year = new Date().getFullYear();
+    $$('.date-badge').forEach(el => el.childNodes.forEach(node => { if (node.nodeType === 3 && node.textContent.trim()) node.textContent = year + '年' + DATE + ' 鑑定書'; }));
+  }
+})();
 </script>
 </body>
 </html>
