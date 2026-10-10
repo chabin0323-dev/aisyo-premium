@@ -975,6 +975,13 @@
     if (pMonth) params.set('pMonth', pMonth);
     if (pDay) params.set('pDay', pDay);
 
+    // あなた自身の情報も鑑定に使う
+    const myFields = { myBlood: 'blood', myEto: 'eto', mySeiza: 'seiza', myYear: 'year', myMonth: 'month', myDay: 'day' };
+    Object.keys(myFields).forEach(k => {
+      const v = document.getElementById(myFields[k]).value;
+      if (v) params.set(k, v);
+    });
+
     window.location.href = 'result.html?' + params.toString();
   }
 
